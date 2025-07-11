@@ -1,16 +1,19 @@
 const express = require('express');
 const router = express.Router();
 const Service = require('../models/service.js');
+const { createService } = require('../controllers/serviceController.js');
 
-router.post('/create', async (req, res) => {
-  const newService = new Service(req.body);
-  await newService.save();
-  res.json({ message: 'Service created' });
-});
+// Use only the controller function
+router.post('/create', createService);// POST /api/services/create
 
+// GET all services
 router.get('/', async (req, res) => {
-  const services = await Service.find();
-  res.json(services);
+  try {
+    const services = await Service.find();
+    res.json(services);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch services' });
+  }
 });
 
 module.exports = router;

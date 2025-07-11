@@ -1,14 +1,35 @@
+const Service = require('../models/service.js');// Import the service model
 const User = require('../models/user.js'); // Import the User model
 
-// Function to register a user - handle registration request -get request from frontend and save to DB
-const registerUser = async (req, res) => {
+const createService = async (req, res) => {
+  const { title, description, price, userId } = req.body;
+
   try {
-    const newUser = new User(req.body); // Take data from form (frontend)
-    await newUser.save();               // Save to MongoDB
-    res.status(201).json({ message: 'You have succesfully registered the account.' }); // Send success response
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to register user, please provide valid information' }); // Send error response
+    //find the user via userId
+     const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (user.role !== 'provider') {
+      return res.status(403).json({ message: 'Only providers can create services' });
+    }
+
+     // Create service linked to provider
+    const service = await Service.create({
+      title,
+      description,
+      price,
+      provider: userId
+    });
+
+    res.status(201).json(service);
+  } catch (err) {
+    res.status(500).json({ message: 'Error creating service', error: err.message });
   }
 };
 
-module.exports = { registerUser }; // Export the function
+module.exports = {
+  createService
+};
+
