@@ -8,11 +8,13 @@ app.use(cors());
 app.use(express.json());
 
 // Import routes
-const userRoutes = require('./routes/userRoutes.js');
-const serviceRoutes = require('./routes/serviceRoutes.js');
+const userRoutes = require('./routes/userRoutes.js');//user route
+const serviceRoutes = require('./routes/serviceRoutes.js');//service route
+const bookingRoutes = require('./routes/bookingRoutes.js'); //booking route
 
 app.use('/api/users', userRoutes);   //Any request that starts with /api/users ,go look in userRoutes to find out how to handle it
 app.use('/api/services', serviceRoutes);
+app.use('/api/bookings', bookingRoutes);
 
 // Connect to MongoDB
 console.log("MONGO_URI:", process.env.MONGO_URI);//test the mongodb
