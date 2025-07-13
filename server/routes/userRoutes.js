@@ -1,15 +1,41 @@
 const express = require('express');
+//add registration route
+const { body, validationResult } = require('express-validator');
 const router = express.Router();
 const { registerUser,loginUser } = require('../controllers/userController.js'); // Get the controller
 
+// Validate registration input
+const validateRegistration = [
+  body('name').trim().notEmpty().withMessage('Name is required'),
+  body('email').isEmail().withMessage('Email must be valid'),
+  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+  body('role').isIn(['customer', 'provider']).withMessage('Role must be customer or provider')
+];
 
-//set up the /register endpoint
-router.post('/register', registerUser);
+// Route: POST /api/users/register with validation
+router.post('/register', validateRegistration, (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  next(); // go to controller
+}, registerUser);
 
-//set up the /login endpoint- also test my terminal too see why login failed
-router.post('/login', async (req, res, next) => {
-  console.log("🔥 /login endpoint HIT");
-  next();
+// Validation for login
+const validateLogin = [
+  body('email').isEmail().withMessage('Email must be valid'),
+  body('password').notEmpty().withMessage('Password is required')
+];
+
+router.post('/login', validateLogin, (req, res, next) => {
+  // Check for validation errors
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+    // Route: POST /api/users/login with test log - to understand why log in fail
+  console.log("/login endpoint HIT");
+  next(); // pass to controller
 }, loginUser);
 
 module.exports = router;

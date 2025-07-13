@@ -2,11 +2,11 @@ const Service = require('../models/service.js');// Import the service model
 const User = require('../models/user.js'); // Import the User model
 
 const createService = async (req, res) => {
-  const { title, description, price, userId } = req.body;
+  const { title, description, price, provider} = req.body;
 
   try {
-    //find the user via userId
-     const user = await User.findById(userId);
+    //find the user via provider id
+     const user = await User.findById(provider);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -20,7 +20,7 @@ const createService = async (req, res) => {
       title,
       description,
       price,
-      provider: userId
+      provider
     });
 
     res.status(201).json(service);
