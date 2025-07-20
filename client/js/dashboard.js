@@ -2,11 +2,21 @@ const user = getUser();
 const contentDiv = document.getElementById('content');
 const welcome = document.getElementById('welcome');
 
-if (!user) {
-  window.location.href = 'login.html';
-}
+// Always load listings
+loadServicesForCustomer(user?._id);
 
-welcome.textContent = `Welcome, ${user.name} (${user.role})`;
+// Only show welcome message if logged in
+if (user) {
+  welcome.textContent = `Welcome, ${user.name} (${user.role})`;
+
+  if (user.role === 'provider') {
+    loadProviderBookings(user._id);
+  } else if (user.role === 'customer') {
+    loadCustomerBookings(user._id);
+  }
+} else {
+  welcome.textContent = `Welcome, Guest`;
+}
 
 //call the relevant function 
 if (user.role === 'provider') {
@@ -135,6 +145,13 @@ async function loadServicesForCustomer(customerId) {
 }
 //Customer: booking services
 async function bookService(serviceId) {
+  //if not registered user, then ask user to log in first before booking service
+  if (!user) {
+  alert('Please log in to book a service.');
+  window.location.href = 'login.html';
+  return;
+}
+
   const notes = prompt('Enter any notes for your booking:');
   const res = await fetch('http://localhost:3000/api/bookings/create', {
     method: 'POST',
