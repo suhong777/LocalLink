@@ -2,25 +2,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>LocalLink - Home</title>
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
   <nav>
-    <a href="index.html">Home</a> |
-    <a href="register.html">Register</a> |
-    <a href="login.html">Login</a>|
-    <a href="dashboard.html">Service</a>
+    <span><a href="index.html" class="nav-logo">LocalLink</span></a>
+    <div>
+      <a href="index.html">Home</a>
+      <a href="register.html">Register</a>
+      <a href="login.html">Login</a>
+      <a href="dashboard.html">Service</a>
+    </div>
   </nav>
 
-  <h1>Welcome to LocalLink!</h1>
-  <p>Your platform to find or offer local services.</p>
+  <div id="content">
+    <h2>Welcome to LocalLink</h2>
+    <p>Connecting customers with reliable local service providers. Browse available services or register to get started!</p>
+  </div>
 
   <h1>Available Services</h1>
   <div id="listings"></div>
   <p><a href="register.html">Create an account</a> or <a href="login.html">log in</a> to continue.</p>
 
   <script src="js/index.js"></script>
+
+  <footer>
+    &copy; 2025 LocalLink.Created by Xiuhong Zhou. All rights reserved.
+  </footer>
 </body>
 </html>
