@@ -178,20 +178,40 @@ async function bookService(serviceId) {
   return;
 }
 
+//Get notes from user
   const notes = prompt('Enter any notes for your booking:');
+
+// Check if user clicked "Cancel" - prompt returns null when cancelled
+  if (notes === null) {
+    // User clicked "Cancel", so don't proceed with booking
+    return;
+  }
+
+  try {
   const res = await fetch('http://localhost:3000/api/bookings/create', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       service: serviceId,
       customer: user._id,
-      notes
-})
+      notes:notes ||'' 
+    })
   });
 
   const data = await res.json();
-  alert(data.message || 'Booking created');
-
+  
+   // Add proper error handling
+    if (res.ok) {
+      alert(data.message || 'Booking created successfully!');
+      //  Refresh bookings to show the new one
+      loadCustomerBookings(user._id);
+    } else {
+      alert(data.message || 'Failed to create booking');
+    }
+}catch (error) {  //  Added catch block
+    console.error('Booking error:', error);
+    alert('Network error. Please try again.');
+  }
 }
 
 //customer:show booking history
