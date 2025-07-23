@@ -122,7 +122,7 @@ async function loadProviderBookings(providerId) {
   });
 }
 
-//show the existing service
+//show the existing service for provider
 async function loadProviderServices(providerId) {
   try {
     const res = await fetch('http://localhost:3000/api/services');
@@ -152,6 +152,7 @@ async function loadProviderServices(providerId) {
   }
 }
 
+//show service 
 async function loadServicesForCustomer(customerId) {
   const res = await fetch('http://localhost:3000/api/services');
   const services = await res.json();
@@ -169,6 +170,8 @@ async function loadServicesForCustomer(customerId) {
     </div>
   `).join('');
 }
+
+
 //Customer: booking services
 async function bookService(serviceId) {
   //if not registered user, then ask user to log in first before booking service
@@ -232,6 +235,9 @@ async function loadCustomerBookings(customerId) {
           <p><strong>Service:</strong> ${b.service?.title || 'N/A'}</p>
           <p><strong>Status:</strong> ${b.status}</p>
           <p><strong>Notes:</strong> ${b.notes}</p>
+          <button onclick="deleteBooking('${b._id}')">
+            Delete Booking History
+          </button>
         </div>
       `).join('')}
     `;
@@ -262,5 +268,34 @@ async function updateStatus(bookingId, newStatus) {
   } catch (err) {
     console.error(err);
     alert('Error updating booking.');
+  }
+}
+//delete function -customer to delete the booking
+async function deleteBooking(bookingId) {
+  // Confirm before deleting
+  const confirmDelete = confirm('Are you sure you want to delete this booking history? This action cannot be undone.');
+  
+  if (!confirmDelete) {
+    return; // User cancelled
+  }
+
+  try {
+    const res = await fetch(`http://localhost:3000/api/bookings/${bookingId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    const data = await res.json();
+    
+    if (res.ok) {
+      alert(data.message || 'Booking deleted successfully!');
+      // Refresh the bookings list to remove the deleted booking
+      loadCustomerBookings(user._id);
+    } else {
+      alert(data.message || 'Failed to delete booking');
+    }
+  } catch (error) {
+    console.error('Delete booking error:', error);
+    alert('Error deleting booking. Please try again.');
   }
 }

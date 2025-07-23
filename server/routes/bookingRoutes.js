@@ -1,7 +1,7 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');//booking validation
 const router = express.Router();
-const { createBooking,getBookingsByCustomer, getBookingsByProvider,  updateBookingStatus} = require('../controllers/bookingController.js');
+const { createBooking,getBookingsByCustomer, getBookingsByProvider,  updateBookingStatus , deleteBooking } = require('../controllers/bookingController.js');
 
 //booking validation
 const validateBooking = [
@@ -25,5 +25,7 @@ router.get('/customer/:customerId', getBookingsByCustomer);
 router.get('/provider/:providerId', getBookingsByProvider);
 //booking status update
 router.put('/:bookingId/status', updateBookingStatus);
+//  DELETE /api/bookings/:bookingId -delete booking (for customers)
+router.delete('/:bookingId', deleteBooking); 
 
 module.exports = router;
