@@ -7,7 +7,28 @@ const user = getUser();
 const contentDiv = document.getElementById('content');
 const welcome = document.getElementById('welcome');
 
-// Always load listings
+// LOGIN / LOGOUT LINK LOGIC -for registered user and unregistered user
+const authLink = document.getElementById('authLink');
+
+if (authLink) {
+  if (user) {
+    // Logged in: Show "Logout"
+    authLink.textContent = 'Logout';
+    authLink.href = '#';
+    authLink.addEventListener('click', function (e) {
+      e.preventDefault();
+      localStorage.removeItem('localLinkUser');
+      alert('You have been logged out.');
+      window.location.href = 'index.html';
+    });
+  } else {
+    // Not logged in: Show "Login"
+    authLink.textContent = 'Login';
+    authLink.href = 'login.html';
+  }
+}
+
+// Always load listings -no matter if customer log in or not
 loadServicesForCustomer(user?._id);
 
 // Only show welcome message if logged in
