@@ -14,7 +14,7 @@ document.getElementById('loginForm').addEventListener('submit', async function (
     });
 
     const data = await res.json();
-    const message = document.getElementById('message');
+    const message = document.getElementById('message');  
 
     if (res.ok) {
       message.style.color = 'green';

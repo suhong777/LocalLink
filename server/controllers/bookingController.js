@@ -5,24 +5,40 @@ const Service = require('../models/service.js');
 
 //create booking request- customer
 const createBooking = async (req, res) => {
-  const { serviceId, customerId, notes } = req.body;
+  const { service, customer, notes } = req.body;
 
   try {
-    const customer = await User.findById(customerId);
+    const customerUser = await User.findById(customer);
 
-    if (!customer || customer.role !== 'customer') {
+    if (!customerUser|| customerUser.role !== 'customer') {
       return res.status(403).json({ message: 'Only registered customers can book services' });
     }
 
+    //  Verify the service exists
+    const serviceExists = await Service.findById(service);
+    if (!serviceExists) {
+      return res.status(404).json({ message: 'Service not found' });
+    }
+
+    // Create the booking
     const newBooking = await Booking.create({
-      service: serviceId,
-      customer: customerId,
+      service: service,
+      customer: customer,
       notes
     });
 
-    res.status(201).json(newBooking);
+
+   //  Return success response with booking details
+    res.status(201).json({ 
+      message: 'Booking created successfully!',
+      booking: newBooking 
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Error creating booking', error: error.message });
+    console.error('Error creating booking:', error);
+    res.status(500).json({ 
+      message: 'Error creating booking', 
+      error: error.message 
+    });
   }
 };
 

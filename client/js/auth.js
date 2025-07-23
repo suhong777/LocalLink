@@ -4,7 +4,8 @@ function saveUser(user) {
 }
 
 function getUser() {
-  return JSON.parse(localStorage.getItem('localLinkUser'));
+  const user = localStorage.getItem('localLinkUser');
+  return user ? JSON.parse(user) : null;
 }
 
 function logout() {

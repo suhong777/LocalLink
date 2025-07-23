@@ -35,6 +35,17 @@ nav span {
   color: white;
 }
 
+.nav-links a {
+  margin-left: 1.5rem;
+  color: #ecf0f1;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.nav-links a:hover {
+  color: #1abc9c;
+}
+
 nav div a {
   color: white;
   text-decoration: none;
@@ -118,26 +129,71 @@ footer {
   padding: 15px 0;
 }
 
-/* style for index page*/
-.services-section {
-  padding: 40px 20px;
-  max-width: 1000px;
-  margin: auto;
+/* Hero Section */
+.hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 60px 10%;
+  background-color: white;
 }
 
-.service-listings {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+.hero-text {
+  flex: 1;
+}
+
+.hero-text h1 {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  color: #2f612f;
+}
+
+.hero-text p {
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+}
+
+.hero-text button {
+  padding: 10px 20px;
+  background-color: #2f612f;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.hero-text button:hover {
+  background-color: #244d24;
+}
+
+.hero-image {
+  flex: 1;
+  text-align: center;
+}
+
+.hero-image img {
+  width: 90%;
+  max-width: 400px;
+  border-radius: 10px;
+}
+
+/* Services Section */
+#listings {
+  padding: 40px 10%;
+  background-color: #ffffff;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
   gap: 20px;
-  margin-top: 20px;
 }
 
 .service-card {
-  border: 1px solid #ddd;
-  border-radius: 12px;
+  flex: 1 1 30%;
+  background-color: #eaf4ea;
   padding: 20px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+  min-width: 250px;
   transition: transform 0.2s ease;
 }
 
@@ -147,29 +203,39 @@ footer {
 
 .service-card h3 {
   margin-bottom: 10px;
-  color: #2c3e50;
+  color: #2f612f;
 }
 
 .service-card p {
-  color: #555;
+  margin-bottom: 5px;
 }
 
-.auth-prompt {
-  margin-top: 30px;
+/* Join Provider Section */
+.join {
+  padding: 50px 10%;
   text-align: center;
+  background-color: #dff0df;
 }
 
-.auth-prompt p {
-  font-size: 1.1em;
+.join h2 {
+  font-size: 2rem;
+  margin-bottom: 10px;
+  color: #2f612f;
 }
 
-.btn-link {
-  text-decoration: none;
-  font-weight: bold;
-  color: #4CAF50;
+.join p {
+  font-size: 1.1rem;
+  margin-bottom: 20px;
 }
 
-.btn-link:hover {
-  text-decoration: underline;
-  color: #388E3C;
+.join a {
+  background-color: #2f612f;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
 }
+
+.join a:hover {
+  background-color: #244d24;
+}
+

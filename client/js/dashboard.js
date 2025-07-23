@@ -1,3 +1,8 @@
+function getUser() {
+  const user = localStorage.getItem('localLinkUser'); // MATCH the key used in login.js
+  return user ? JSON.parse(user) : null;
+}
+
 const user = getUser();
 const contentDiv = document.getElementById('content');
 const welcome = document.getElementById('welcome');
@@ -157,14 +162,15 @@ async function bookService(serviceId) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      serviceId: serviceId,
-      customerId: user._id, //Get customer id from backend
+      service: serviceId,
+      customer: user._id,
       notes
-    })
+})
   });
 
   const data = await res.json();
   alert(data.message || 'Booking created');
+
 }
 
 //customer:show booking history
