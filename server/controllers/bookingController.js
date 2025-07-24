@@ -116,6 +116,13 @@ const deleteBooking = async (req, res) => {
       return res.status(404).json({ message: 'Booking not found' });
     }
 
+    // Check if booking status is pending , only pending booking status allows deletion
+    if (booking.status !== 'pending') {
+      return res.status(400).json({ 
+        message: `Cannot delete booking with status: ${booking.status}` 
+      });
+    }
+
     // Delete the booking
     await Booking.findByIdAndDelete(bookingId);
 

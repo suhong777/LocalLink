@@ -28,8 +28,9 @@ if (authLink) {
   }
 }
 
-// Always load listings -no matter if customer log in or not
+/*// Always load listings -no matter if customer log in or not
 loadServicesForCustomer(user?._id);
+*/
 
 // Only show welcome message if logged in
 if (user) {
@@ -38,19 +39,22 @@ if (user) {
   if (user.role === 'provider') {
     loadProviderBookings(user._id);
   } else if (user.role === 'customer') {
+    loadServicesForCustomer(user._id);
     loadCustomerBookings(user._id);
   }
 } else {
   welcome.textContent = `Welcome, Guest`;
+  loadServicesForCustomer(); 
 }
 
-//call the relevant function 
+/*//call the relevant function 
 if (user.role === 'provider') {
   loadProviderBookings(user._id);
 } else if (user.role === 'customer') {
   loadServicesForCustomer(user._id);
   loadCustomerBookings(user._id); 
 }
+*/
 
 //provider function
 async function loadProviderBookings(providerId) {
@@ -224,7 +228,7 @@ async function loadCustomerBookings(customerId) {
     const bookings = await res.json();
 
     if (bookings.length === 0) {
-      contentDiv.innerHTML += '<h2>Your Bookings</h2><p>You have not booked any services yet.</p>';
+      contentDiv.innerHTML = '<h2>Your Bookings</h2><p>You have not booked any services yet.</p>';
       return;
     }
 
