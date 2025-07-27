@@ -1,3 +1,9 @@
+/*
+	Project: LocalLink
+	Name: Xiuhong Zhou 
+	Date:27/07/2025
+*/
+
 /*default style for all my LocalLinkpages*/
 * {
   margin: 0;
@@ -13,7 +19,7 @@ body {
   padding-bottom: 60px;
 }
 
-/* Navbar */
+/* Nav bar */
 nav {
   background-color: #2c3e50;
   color: white;
@@ -295,4 +301,77 @@ footer {
   font-size: 1.8rem;
   margin-top: 30px;
   margin-bottom: 20px;
+}
+
+/* responsive setting for all pages */
+@media (max-width: 992px) {
+  .hero {
+    flex-direction: column;
+    text-align: center;
+    padding: 40px 5%;
+  }
+
+  .hero-image img {
+    max-width: 300px;
+  }
+
+  .provider-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .provider-img img {
+    max-width: 400px;
+  }
+
+  #content {
+    max-width: 95%;
+    padding: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  nav {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px;
+  }
+
+  nav div {
+    margin-top: 10px;
+  }
+
+  .service-cards > div {
+    width: 100%;
+    max-width: 350px;
+  }
+
+  #listings {
+    gap: 15px;
+    padding: 20px 5%;
+  }
+
+  footer {
+    font-size: 0.9rem;
+    padding: 10px 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-text h1 {
+    font-size: 1.8rem;
+  }
+
+  .hero-text p {
+    font-size: 1rem;
+  }
+
+  .join h2 {
+    font-size: 1.5rem;
+  }
+
+  .service-cards > div {
+    font-size: 1rem;
+    padding: 15px;
+  }
 }
