@@ -18,7 +18,7 @@ if (authLink) {
     authLink.addEventListener('click', function (e) {
       e.preventDefault();
       localStorage.removeItem('localLinkUser');
-      alert('You have been logged out.');
+      popUpMessage('info','You have been logged out.');
       window.location.href = 'index.html';
     });
   } else {
@@ -145,6 +145,9 @@ async function loadProviderServices(providerId) {
         <div style="border:1px solid #ccc; padding:10px; margin:10px;">
           <p><strong>${s.title}</strong> - $${s.price}</p>
           <p>${s.description}</p>
+          <button onclick="deleteService('${s._id}')">
+            Delete Listing
+          </button>
         </div>
       `).join('')}
     `;
@@ -180,7 +183,7 @@ async function loadServicesForCustomer(customerId) {
 async function bookService(serviceId) {
   //if not registered user, then ask user to log in first before booking service
   if (!user) {
-  alert('Please log in to book a service.');
+  popUpMessage('warning','Please log in to book a service.');
   window.location.href = 'login.html';
   return;
 }
@@ -209,15 +212,15 @@ async function bookService(serviceId) {
   
    // Add proper error handling
     if (res.ok) {
-      alert(data.message || 'Booking created successfully!');
+      popUpMessage('success', data.message || 'Booking created successfully!');
       //  Refresh bookings to show the new one
       loadCustomerBookings(user._id);
     } else {
-      alert(data.message || 'Failed to create booking');
+      popUpMessage('error', data.message || 'Failed to create booking');
     }
 }catch (error) {  //  Added catch block
     console.error('Booking error:', error);
-    alert('Network error. Please try again.');
+    popUpMessage('error', 'Network error. Please try again.');
   }
 }
 
@@ -240,7 +243,7 @@ async function loadCustomerBookings(customerId) {
           <p><strong>Status:</strong> ${b.status}</p>
           <p><strong>Notes:</strong> ${b.notes}</p>
           <button onclick="deleteBooking('${b._id}')">
-            Delete Booking History
+            Delete
           </button>
         </div>
       `).join('')}
@@ -264,25 +267,28 @@ async function updateStatus(bookingId, newStatus) {
 
     const data = await res.json();
     if (res.ok) {
-      alert(`Booking ${newStatus}`);
+      popUpMessage('success', `Booking ${newStatus}`);
       loadProviderBookings(user._id); // Refresh
     } else {
-      alert(data.message || 'Failed to update booking.');
+      popUpMessage('error', data.message || 'Failed to update booking');
     }
   } catch (err) {
     console.error(err);
-    alert('Error updating booking.');
+    popUpMessage('error', 'Network error. Please try again.');
   }
 }
 //delete function -customer to delete the booking
 async function deleteBooking(bookingId) {
-  // Confirm before deleting
-  const confirmDelete = confirm('Are you sure you want to delete this booking history? This action cannot be undone.');
-  
-  if (!confirmDelete) {
-    return; // User cancelled
-  }
-
+  confirmPopUp(
+    'Delete Booking', 
+    'Are you sure you want to delete this booking history? This action cannot be undone.',
+    () => {
+      // Put the actual delete logic here
+      performDeleteBooking(bookingId);
+    }
+  );
+}
+async function performDeleteBooking(bookingId) {
   try {
     const res = await fetch(`http://localhost:3000/api/bookings/${bookingId}`, {
       method: 'DELETE',
@@ -292,14 +298,132 @@ async function deleteBooking(bookingId) {
     const data = await res.json();
     
     if (res.ok) {
-      alert(data.message || 'Booking deleted successfully!');
+      popUpMessage('success', data.message || 'Booking deleted successfully!');
       // Refresh the bookings list to remove the deleted booking
       loadCustomerBookings(user._id);
     } else {
-      alert(data.message || 'Failed to delete booking');
+      popUpMessage('error', data.message || 'Failed to delete booking');
     }
   } catch (error) {
     console.error('Delete booking error:', error);
-    alert('Error deleting booking. Please try again.');
+    popUpMessage('error', 'Error deleting booking. Please try again.');
   }
 }
+
+// Delete service - for providers to delete their listings
+async function deleteService(serviceId) {
+  confirmPopUp(
+    'Delete Service', 
+    'Are you sure you want to delete this listing? This action cannot be undone and it might impact your current bookings.',
+    () => {
+      performDeleteService(serviceId);
+    }
+  );
+}
+
+async function deleteService(serviceId) {
+  confirmPopUp(
+    'Delete Service', 
+    'Are you sure you want to delete this listing? This action cannot be undone and it might impact your current bookings.',
+    () => {
+      performDeleteService(serviceId);
+    }
+  );
+}
+async function performDeleteService(serviceId) {
+  try {
+    const res = await fetch(`http://localhost:3000/api/services/${serviceId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    const data = await res.json();
+    
+    if (res.ok) {
+      popUpMessage('success', data.message || 'Service deleted successfully!');
+      // Refresh the page to remove the deleted service
+      loadProviderBookings(user._id);
+    } else {
+      popUpMessage('error', data.message || 'Failed to delete service');
+    }
+  } catch (error) {
+    console.error('Delete service error:', error);
+    popUpMessage('error', 'Error deleting service. Please try again.');
+  }
+}
+
+//pop up function - to replace my alert message 
+function popUpMessage(type, message) {
+  const overlay = document.getElementById('popupOverlay');
+  const icon = document.getElementById('popupIcon');
+  const title = document.getElementById('popupTitle');
+  const text = document.getElementById('popupText');
+  const cancelBtn = document.getElementById('popupCancel');
+  const okBtn = document.getElementById('popupOK');
+
+  // Set icon and title based on type
+  if (type === 'success') {
+    icon.textContent = '✓';
+    icon.style.color = '#28a745';
+    title.textContent = 'Success';
+  } else if (type === 'error') {
+    icon.textContent = '✗';
+    icon.style.color = '#dc3545';
+    title.textContent = 'Error';
+  } else if (type === 'warning') {
+    icon.textContent = '⚠';
+    icon.style.color = '#ffc107';
+    title.textContent = 'Warning';
+  } else {
+    icon.textContent = 'ℹ';
+    icon.style.color = '#17a2b8';
+    title.textContent = 'Information';
+  }
+
+  text.textContent = message;
+  cancelBtn.style.display = 'none';
+  okBtn.textContent = 'OK';
+
+  overlay.classList.add('show');
+
+  // Close popup when OK clicked
+  okBtn.onclick = function() {
+    overlay.classList.remove('show');
+  };
+}
+
+function confirmPopUp(message, confirmFunction) {
+  const overlay = document.getElementById('popupOverlay');
+  const icon = document.getElementById('popupIcon');
+  const title = document.getElementById('popupTitle');
+  const text = document.getElementById('popupText');
+  const cancelBtn = document.getElementById('popupCancel');
+  const okBtn = document.getElementById('popupOK');
+
+  icon.textContent = '?';
+  icon.style.color = '#ffc107';
+  title.textContent = 'Confirm';
+  text.textContent = message;
+  
+  cancelBtn.style.display = 'inline-block';
+  okBtn.textContent = 'Yes';
+
+  overlay.classList.add('show');
+
+  // Handle Yes/No clicks
+  okBtn.onclick = function() {
+    overlay.classList.remove('show');
+    confirmFunction(); // Run the function if Yes clicked
+  };
+
+  cancelBtn.onclick = function() {
+    overlay.classList.remove('show');
+  };
+}
+
+// Close popup when clicking outside
+document.getElementById('popupOverlay').onclick = function(e) {
+  if (e.target === this) {
+    this.classList.remove('show');
+  }
+};

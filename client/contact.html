@@ -1,0 +1,40 @@
+<!-- The Contact Us page-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contact Us - LocalLink</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <nav>
+    <span><a href="index.html" class="nav-logo">LocalLink</a></span>
+    <div>
+      <a href="index.html">Home</a>
+      <a href="dashboard.html">Service</a>
+      <a href="register.html">Register</a>
+      <a id="welcome"></a>
+      <a id="authLink" href="login.html">Login</a> 
+    </div>
+  </nav>
+
+  <div id="content">
+    <h2>Contact US</h2>
+    <form id="contactForm">
+      <input type="text" id="name" name="name" placeholder="*Your Name" required />
+      <input type="email" id="email" name="email" placeholder="*Email" required />
+      <input type="text" id="message" name="message" placeholder="*Please enter your query." required></textarea>
+      <button type="submit">Submit</button>
+    </form>
+    <p id="customerMessage"></p>
+  </div>
+
+    
+  <script src="js/contactUs.js"></script>
+
+  <footer>
+    &copy; 2025 LocalLink.Created by Xiuhong Zhou. All rights reserved.
+  </footer>
+</body>
+</html>

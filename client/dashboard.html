@@ -8,17 +8,30 @@
 </head>
 <body>
   <nav>
-    <span><a href="index.html" class="nav-logo">LocalLink</span></a>
+    <span><a href="index.html" class="nav-logo">LocalLink</a></span>
     
     <div>
       <a href="index.html">Home</a>
       <a href="dashboard.html">Service</a>
+      <a href="contact.html">Contact Us</a>
       <a id="welcome"></a>
       <a id="authLink" href="login.html">Login</a> 
     </div>
   </nav>
 
   <div id="content"></div>
+
+  <div class="popup-overlay" id="popupOverlay">
+  <div class="popup-message" id="popupMessage">
+    <div class="popup-icon" id="popupIcon"></div>
+    <div class="popup-title" id="popupTitle"></div>
+    <div class="popup-text" id="popupText"></div>
+    <div class="popup-buttons">
+      <button class="popup-btn secondary" id="popupCancel" style="display: none;">Cancel</button>
+      <button class="popup-btn primary" id="popupOK">OK</button>
+    </div>
+  </div>
+</div>
 
   <script src="js/auth.js"></script>
   <script src="js/dashboard.js"></script>

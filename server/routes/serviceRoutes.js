@@ -2,7 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');//add validation-express
 const router = express.Router();
 const Service = require('../models/service.js');
-const { createService } = require('../controllers/serviceController.js');
+const { createService,deleteService } = require('../controllers/serviceController.js');
 
 //service input validation
 const validateService = [
@@ -30,5 +30,8 @@ router.get('/', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch services' });
   }
 });
+
+// DELETE a specific service -service provider
+router.delete('/:serviceId', deleteService);
 
 module.exports = router;

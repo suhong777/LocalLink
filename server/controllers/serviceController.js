@@ -29,7 +29,27 @@ const createService = async (req, res) => {
   }
 };
 
+//delete the service
+const deleteService = async (req, res) => {
+  const { serviceId } = req.params;
+  
+  try {
+    // Find the service first
+    const service = await Service.findById(serviceId);
+    if (!service) {
+      return res.status(404).json({ message: 'Service not found' });
+    }
+
+    await Service.findByIdAndDelete(serviceId);
+    
+    res.status(200).json({ message: 'Service deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error deleting service', error: err.message });
+  }
+};
+
 module.exports = {
-  createService
+  createService,
+  deleteService
 };
 
