@@ -28,70 +28,352 @@ if (authLink) {
   }
 }
 
-/*// Always load listings -no matter if customer log in or not
-loadServicesForCustomer(user?._id);
-*/
 
 // Only show welcome message if logged in
 if (user) {
   welcome.textContent = `Welcome, ${user.name} (${user.role})`;
-
+  
+  // Show provider tab if user is a provider
   if (user.role === 'provider') {
-    loadProviderBookings(user._id);
-  } else if (user.role === 'customer') {
-    loadServicesForCustomer(user._id);
-    loadCustomerBookings(user._id);
+    document.getElementById('provider-tab').style.display = 'flex';
+
+    //hide the booking history tab
+    const bookingTab = document.querySelector('[data-tab="bookings"]');
+    if (bookingTab) {
+      bookingTab.style.display = 'none';
+    }
   }
+  //only show welcome guest if unresgitered
 } else {
   welcome.textContent = `Welcome, Guest`;
-  loadServicesForCustomer(); 
 }
 
-/*//call the relevant function 
-if (user.role === 'provider') {
-  loadProviderBookings(user._id);
-} else if (user.role === 'customer') {
-  loadServicesForCustomer(user._id);
-  loadCustomerBookings(user._id); 
-}
-*/
 
-//provider function
-async function loadProviderBookings(providerId) {
-  const res = await fetch(`http://localhost:3000/api/bookings/provider/${providerId}`);
-  const bookings = await res.json();
+// Tab functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const tabButtons = document.querySelectorAll('.tab'); 
+  const tabContents = document.querySelectorAll('.tab-content');
 
-  const formHtml = `
-    <h2>Create New Service</h2>
-    <form id="serviceForm">
-      <input type="hidden" name="provider" value="${user._id}" />
-      <input type="text" name="title" placeholder="Service title" required />
-      <input type="text" name="description" placeholder="Description" required />
-      <input type="number" name="price" placeholder="Price" required />
-      <button type="submit">Create Service</button>
-    </form>
-    <p id="serviceMessage"></p>
+  tabButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      const targetTab = this.getAttribute('data-tab');
+
+      // Remove active class from all buttons and contents
+      tabButtons.forEach(btn => btn.classList.remove('active'));
+      tabContents.forEach(content => content.classList.remove('active'));
+
+      // Add active class to clicked button and corresponding content
+      this.classList.add('active');
+      document.getElementById(targetTab).classList.add('active');
+
+  
+      // Load content based on active tab
+      if (targetTab === 'bookings') { // 
+        loadBookingHistory();
+      } else if (targetTab === 'services') { 
+        loadServicesForCustomer(user?._id);
+      } else if (targetTab === 'provider') { 
+        loadProviderDashboard();
+      }
+    });
+  });
+
+  // Load initial content
+  loadServicesForCustomer(user?._id);
+  if (user) {
+    loadBookingHistory();
+  }
+});
+
+//show the existing service for provider
+async function loadProviderServices(providerId) {
+  const servicesContainer = document.getElementById('provider-services'); 
+  
+  // Show loading state
+  servicesContainer.innerHTML = `
+    <div class="empty">
+      <i class="fas fa-spinner fa-spin"></i>
+      <h3>Loading your services...</h3>
+    </div>
   `;
 
-  let bookingHtml = bookings.length === 0
-    ? '<p>No bookings yet.</p>'
-    : '<h2>Your Service Bookings</h2>' + bookings.map(b => `
-        <div style="border:1px solid #ccc; padding:10px; margin:10px;">
-          <p><strong>Service:</strong> ${b.service?.title || 'N/A'}</p>
-          <p><strong>Status:</strong> ${b.status}</p>
-          <p><strong>Customer:</strong> ${b.customer?.name || 'N/A'}</p>
-          <p><strong>Notes:</strong> ${b.notes}</p>
-          ${b.status === 'pending' ? `
-            <button onclick="updateStatus('${b._id}', 'accepted')">Accept</button>
-            <button onclick="updateStatus('${b._id}', 'rejected')">Reject</button>
-          ` : ''}
+  try {
+    const res = await fetch('http://localhost:3000/api/services');
+    const services = await res.json();
+
+    const myServices = services.filter(service => service.provider === providerId);
+
+    if (myServices.length === 0) {
+      servicesContainer.innerHTML = `
+        <div class="empty">
+          <i class="fas fa-plus-circle"></i>
+          <h3>No Services Listed</h3>
+          <p>You haven't created any services yet. Create your first service above!</p>
         </div>
-      `).join('');
+      `;
+    } else {
+      let servicesHTML = '<div class="grid">'; 
+      
+      myServices.forEach(service => {
+        servicesHTML += `
+          <div class="item">
+            <h3>${service.title}</h3>
+            <p>${service.description}</p>
+            <div class="price">${'€'+parseFloat(service.price).toFixed(2)}</div>
+            <div class="actions"> 
+              <button class="btn btn-danger" onclick="deleteService('${service._id}')">
+                Delete 
+              </button>
+            </div>
+          </div>
+        `;
+      });
+      
+      servicesHTML += '</div>';
+      servicesContainer.innerHTML = servicesHTML;
+    }
+  } catch (err) {
+    console.error('Failed to load services:', err);
+    servicesContainer.innerHTML = `
+      <div class="empty">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h3>Error Loading Services</h3>
+        <p>Unable to load your services. Please try again later.</p>
+      </div>
+    `;
+  }
+}
 
-  contentDiv.innerHTML = formHtml + bookingHtml;
 
-  await loadProviderServices(providerId);
+//show service 
+async function loadServicesForCustomer(customerId) {
+  const servicesList = document.getElementById('services-list'); 
 
+  // Show loading state
+  servicesList.innerHTML = `
+    <div class="empty">
+      <i class="fas fa-spinner fa-spin"></i>
+      <h3>Loading services...</h3>
+      <p>Please wait while we fetch available services</p>
+    </div>
+  `;
+
+  try {
+    const res = await fetch('http://localhost:3000/api/services');
+    const services = await res.json();
+
+    if (services.length === 0) {
+      servicesList.innerHTML = `
+        <div class="empty">
+          <i class="fas fa-store-slash"></i>
+          <h3>No Services Available</h3>
+          <p>There are currently no services available. Please check back later.</p>
+        </div>
+      `;
+    } else {
+      let servicesHTML = '<div class="grid">'; 
+      
+      services.forEach(service => {
+        servicesHTML += `
+          <div class="item">
+            <h3>${service.title}</h3>
+            <p>${service.description}</p>
+            <div class="price">${'€'+parseFloat(service.price).toFixed(2)}</div>
+            ${!user || user.role !== 'provider' ? `
+        <div class="actions"> 
+          <button class="btn btn-primary" onclick="bookService('${service._id}')">
+            Book Service 
+          </button>
+        </div>
+      ` : ''}
+    </div>
+  `;
+});
+      
+      servicesHTML += '</div>';
+      servicesList.innerHTML = servicesHTML;
+    }
+  } catch (error) {
+    console.error('Failed to load services:', error);
+    servicesList.innerHTML = `
+      <div class="empty">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h3>Error Loading Services</h3>
+        <p>Unable to load services. Please try again later.</p>
+      </div>
+    `;
+  }
+}
+
+
+//Customer: booking services
+async function bookService(serviceId) {
+  // If not registered user, then ask user to log in first before booking service
+  if (!user) {
+    popUpMessage('warning','Please log in to book a service.');
+    return;
+  }
+
+  // Get notes from user
+  const notes = prompt('Enter any notes for your booking:');
+
+  // Check if user clicked "Cancel" - prompt returns null when cancelled
+  if (notes === null) {
+    // User clicked "Cancel", so don't proceed with booking
+    return;
+  }
+
+  try {
+    const res = await fetch('http://localhost:3000/api/bookings/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        service: serviceId,
+        customer: user._id,
+        notes: notes || '' 
+      })
+    });
+
+    const data = await res.json();
+    
+    // Add proper error handling
+    if (res.ok) {
+      popUpMessage('success', data.message || 'Booking created successfully!');
+      // Refresh bookings to show the new one
+      loadCustomerBookings(user._id);
+    } else {
+      popUpMessage('error', data.message || 'Failed to create booking');
+    }
+  } catch (error) {
+    console.error('Booking error:', error);
+    popUpMessage('error', 'Network error. Please try again.');
+  }
+}
+
+
+// Load customer booking history
+function loadBookingHistory() {
+  const bookingsList = document.getElementById('bookings-list'); 
+  
+  if (!user) {
+    // Guest user
+    bookingsList.innerHTML = `
+      <div class="empty"> 
+        <i class="fas fa-user-lock"></i>
+        <h3>Login Required</h3>
+        <p>Please log in to view your booking history</p>
+        <button class="btn btn-primary" onclick="window.location.href='login.html'">
+          Login 
+        </button>
+      </div>
+    `;
+  } else {
+    // Load customer bookings
+    loadCustomerBookings(user._id);
+  }
+}
+
+//customer:show booking history
+async function loadCustomerBookings(customerId) {
+   const bookingsList = document.getElementById('bookings-list'); 
+  
+  // Show loading state
+  bookingsList.innerHTML = `
+    <div class="empty"> 
+      <i class="fas fa-spinner fa-spin"></i>
+      <h3>Loading bookings...</h3>
+      <p>Please wait while we fetch your bookings</p>
+    </div>
+  `;
+
+  try {
+    const res = await fetch(`http://localhost:3000/api/bookings/customer/${customerId}`);
+    const bookings = await res.json();
+
+    if (bookings.length === 0) {
+      bookingsList.innerHTML = `
+        <div class="empty">
+          <i class="fas fa-calendar-times"></i>
+          <h3>No Bookings Yet</h3>
+          <p>You have not booked any services yet.</p>
+        </div>
+      `;
+    } else {
+      let bookingsHTML = '<div class="grid">'; // 
+      
+      bookings.forEach(booking => {
+        let statusClass = 'pending';
+        if (booking.status === 'accepted') statusClass = 'accepted';
+        if (booking.status === 'rejected') statusClass = 'rejected';
+        
+        bookingsHTML += `
+          <div class="item">
+            <h3>${booking.service?.title || 'N/A'}</h3>
+            <p><strong>Status:</strong> <span class="status ${statusClass}">${booking.status}</span></p>
+            <p><strong>Notes:</strong> ${booking.notes || 'No notes'}</p>
+            <div class="actions"> 
+              <button class="btn btn-danger" onclick="deleteBooking('${booking._id}')">
+                Delete 
+              </button>
+            </div>
+          </div>
+        `;
+      });
+      
+      bookingsHTML += '</div>';
+      bookingsList.innerHTML = bookingsHTML;
+    }
+  } catch (err) {
+    console.error('Failed to load bookings:', err);
+    bookingsList.innerHTML = `
+      <div class="empty">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h3>Error Loading Bookings</h3>
+        <p>Unable to load your bookings. Please try again later.</p>
+      </div>
+    `;
+  }
+}
+
+
+// Load provider dashboard
+function loadProviderDashboard() {
+  if (!user || user.role !== 'provider') {
+    return;
+  }
+  
+  loadProviderForm();
+  loadProviderBookings(user._id);
+  loadProviderServices(user._id);
+}
+
+// Load provider form
+function loadProviderForm() {
+  const formContainer = document.getElementById('service-form'); 
+  
+  formContainer.innerHTML = `
+    <form id="serviceForm" class="service-form">
+      <input type="hidden" name="provider" value="${user._id}" />
+      <div class="form-group">
+        <label for="title">Service Title</label>
+        <input type="text" class="form-control" name="title" id="title" placeholder="Enter service title" required />
+      </div>
+      <div class="form-group">
+        <label for="description">Description</label>
+        <input type="text" class="form-control" name="description" id="description" placeholder="Describe your service" required />
+      </div>
+      <div class="form-group">
+        <label for="price">Price (€)</label>
+        <input type="number" class="form-control" name="price" id="price" placeholder="0.00" step="0.01" min="0" required />
+      </div>
+      <button type="submit" class="btn btn-primary">
+        Create Service 
+      </button>
+      <div id="serviceMessage" class="message" style="display: none;"></div>
+    </form>
+  `;
+
+  // Add form submission handler
   document.getElementById('serviceForm').addEventListener('submit', async function (e) {
     e.preventDefault();
     const form = e.target;
@@ -110,177 +392,90 @@ async function loadProviderBookings(providerId) {
       });
 
       const data = await res.json();
-      const msg = document.getElementById('serviceMessage');
       if (res.ok) {
-        msg.style.color = 'green';
-        msg.textContent = 'Service created successfully.';
+        popUpMessage('success', 'Service created successfully.');
         form.reset();
-        loadProviderBookings(providerId); // Reload bookings
+        loadProviderServices(user._id); // Reload services
       } else {
-        msg.style.color = 'red';
-        msg.textContent = data.message || 'Failed to create service.';
+        popUpMessage('error', data.message || 'Failed to create service.');
       }
     } catch (err) {
       console.error(err);
+      popUpMessage('error', 'Network error. Please try again.');
     }
   });
 }
 
-//show the existing service for provider
-async function loadProviderServices(providerId) {
-  try {
-    const res = await fetch('http://localhost:3000/api/services');
-    const services = await res.json();
-
-    const myServices = services.filter(service => service.provider === providerId);
-
-    if (myServices.length === 0) {
-      contentDiv.innerHTML += '<h2>Your Listings</h2><p>No services listed yet.</p>';
-      return;
-    }
-
-    const listingsHtml = `
-      <h2>Your Listings</h2>
-      ${myServices.map(s => `
-        <div style="border:1px solid #ccc; padding:10px; margin:10px;">
-          <p><strong>${s.title}</strong> - $${s.price}</p>
-          <p>${s.description}</p>
-          <button onclick="deleteService('${s._id}')">
-            Delete Listing
-          </button>
-        </div>
-      `).join('')}
-    `;
-
-    contentDiv.innerHTML += listingsHtml;
-  } catch (err) {
-    console.error('Failed to load services:', err);
-    contentDiv.innerHTML += '<p style="color:red;">Error loading your listings.</p>';
-  }
-}
-
-//show service 
-async function loadServicesForCustomer(customerId) {
-  const res = await fetch('http://localhost:3000/api/services');
-  const services = await res.json();
-
-  if (services.length === 0) {
-    contentDiv.innerHTML = '<p>No services available.</p>';
-    return;
-  }
-
-  contentDiv.innerHTML = '<h2>Available Services</h2>' + services.map(s => `
-    <div style="border:1px solid #ccc; padding:10px; margin:10px;">
-      <p><strong>${s.title}</strong> - $${s.price}</p>
-      <p>${s.description}</p>
-      <button onclick="bookService('${s._id}')">Book</button>
-    </div>
-  `).join('');
-}
-
-
-//Customer: booking services
-async function bookService(serviceId) {
-  //if not registered user, then ask user to log in first before booking service
-  if (!user) {
-  popUpMessage('warning','Please log in to book a service.');
-  window.location.href = 'login.html';
-  return;
-}
-
-//Get notes from user
-  const notes = prompt('Enter any notes for your booking:');
-
-// Check if user clicked "Cancel" - prompt returns null when cancelled
-  if (notes === null) {
-    // User clicked "Cancel", so don't proceed with booking
-    return;
-  }
-
-  try {
-  const res = await fetch('http://localhost:3000/api/bookings/create', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      service: serviceId,
-      customer: user._id,
-      notes:notes ||'' 
-    })
-  });
-
-  const data = await res.json();
+async function loadProviderBookings(providerId) {
+  const bookingsContainer = document.getElementById('provider-bookings'); 
   
-   // Add proper error handling
-    if (res.ok) {
-      popUpMessage('success', data.message || 'Booking created successfully!');
-      //  Refresh bookings to show the new one
-      loadCustomerBookings(user._id);
-    } else {
-      popUpMessage('error', data.message || 'Failed to create booking');
-    }
-}catch (error) {  //  Added catch block
-    console.error('Booking error:', error);
-    popUpMessage('error', 'Network error. Please try again.');
-  }
-}
+  // Show loading state
+  bookingsContainer.innerHTML = `
+    <div class="empty">
+      <i class="fas fa-spinner fa-spin"></i>
+      <h3>Loading bookings...</h3>
+    </div>
+  `;
 
-//customer:show booking history
-async function loadCustomerBookings(customerId) {
   try {
-    const res = await fetch(`http://localhost:3000/api/bookings/customer/${customerId}`);
+    const res = await fetch(`http://localhost:3000/api/bookings/provider/${providerId}`);
     const bookings = await res.json();
 
-    // remove old bookings section
-    const existingBookingsSection = document.querySelector('#bookings-section');
-    if (existingBookingsSection) {
-      existingBookingsSection.remove();
-    }
-
-    // Create new bookings section
-    const bookingsSection = document.createElement('div');
-    bookingsSection.id = 'bookings-section';
-
     if (bookings.length === 0) {
-      bookingsSection.innerHTML = '<h2>Your Bookings</h2><p>You have not booked any services yet.</p>';
-    } else {
-      bookingsSection.innerHTML = `
-        <h2>Your Bookings</h2>
-        ${bookings.map(b => `
-          <div style="border:1px solid #ccc; padding:10px; margin:10px;">
-            <p><strong>Service:</strong> ${b.service?.title || 'N/A'}</p>
-            <p><strong>Status:</strong> ${b.status}</p>
-            <p><strong>Notes:</strong> ${b.notes}</p>
-            <button onclick="deleteBooking('${b._id}')">
-              Delete
-            </button>
-          </div>
-        `).join('')}
+      bookingsContainer.innerHTML = `
+        <div class="empty">
+          <i class="fas fa-calendar-times"></i>
+          <h3>No Bookings Yet</h3>
+          <p>No customers have booked your services yet.</p>
+        </div>
       `;
+    } else {
+      let bookingsHTML = '<div class="grid">'; 
+      
+      bookings.forEach(booking => {
+        let statusClass = 'pending';
+        if (booking.status === 'accepted') statusClass = 'accepted';
+        if (booking.status === 'rejected') statusClass = 'rejected';
+        
+        bookingsHTML += `
+          <div class="item">
+            <h3>${booking.service?.title || 'N/A'}</h3>
+            <p><strong>Customer:</strong> ${booking.customer?.name || 'N/A'}</p>
+            <p><strong>Status:</strong> <span class="status ${statusClass}">${booking.status}</span></p>
+            <p><strong>Notes:</strong> ${booking.notes || 'No notes'}</p>
+            <div class="actions"> 
+              ${booking.status === 'pending' ? `
+                <button class="btn btn-success" onclick="updateStatus('${booking._id}', 'accepted')">
+                  Accept 
+                </button>
+                <button class="btn btn-danger" onclick="updateStatus('${booking._id}', 'rejected')">
+                  Reject 
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      });
+      
+      bookingsHTML += '</div>';
+      bookingsContainer.innerHTML = bookingsHTML;
     }
-
-    // Append the bookings section to contentDiv
-    contentDiv.appendChild(bookingsSection);
-
   } catch (err) {
-    console.error('Failed to load bookings:', err);
-    
-    // Remove existing error section if any
-    const existingBookingsSection = document.querySelector('#bookings-section');
-    if (existingBookingsSection) {
-      existingBookingsSection.remove();
-    }
-    
-    // Add error message
-    const errorSection = document.createElement('div');
-    errorSection.id = 'bookings-section';
-    errorSection.innerHTML = '<p style="color:red;">Error loading your bookings.</p>';
-    contentDiv.appendChild(errorSection);
+    console.error('Failed to load provider bookings:', err);
+    bookingsContainer.innerHTML = `
+      <div class="empty">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h3>Error Loading Bookings</h3>
+        <p>Unable to load bookings. Please try again later.</p>
+      </div>
+    `;
   }
 }
+
 
 //provider: update the booking status
 async function updateStatus(bookingId, newStatus) {
-  try {
+   try {
     const res = await fetch(`http://localhost:3000/api/bookings/${bookingId}/status`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -299,6 +494,7 @@ async function updateStatus(bookingId, newStatus) {
     popUpMessage('error', 'Network error. Please try again.');
   }
 }
+
 //delete function -customer to delete the booking
 async function deleteBooking(bookingId) {
   confirmPopUp(
@@ -355,7 +551,7 @@ async function performDeleteService(serviceId) {
     if (res.ok) {
       popUpMessage('success', data.message || 'Service deleted successfully!');
       // Refresh the page to remove the deleted service
-      loadProviderBookings(user._id);
+      loadProviderServices(user._id);
     } else {
       popUpMessage('error', data.message || 'Failed to delete service');
     }

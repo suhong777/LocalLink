@@ -19,7 +19,71 @@
     </div>
   </nav>
 
-  <div id="content"></div>
+   <div class="container">
+    <div class="header">
+      <h1><i class="serviceDetails"></i> Services</h1>
+      <p>Browse available services and manage your profile</p>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tabs">
+      <button class="tab active" data-tab="services">
+        <i class="serviceDetails_details"></i> Available Services
+      </button>
+      <button class="tab" data-tab="bookings">
+        <i class="serviceDetails_history"></i> Booking History
+      </button>
+      <!-- Provider-only tab -->
+      <button class="tab" data-tab="provider" id="provider-tab" style="display: none;">
+        <i class="provider_details"></i> Provider Profile
+      </button>
+    </div>
+
+    <!-- Tab Contents -->
+    <div id="content">
+      <!-- Available Services Tab -->
+      <div class="tab-content active" id="services">
+        <div class="card">
+          <h2><i class="serviceDetails_details"></i> Services Near You</h2>
+          <div id="services-list">
+            <!-- Content will be loaded from dashboard.js -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Booking History Tab -->
+      <div class="tab-content" id="bookings">
+        <div class="card">
+          <h2><i class="serviceDetails_history"></i> Your Booking History</h2>
+          <div id="bookings-list">
+            <!-- Content will be loaded based on user status -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Provider Dashboard Tab -->
+      <div class="tab-content" id="provider">
+        <div class="card">
+          <h2><i class="provider_details_create"></i> Create New Listing</h2>
+          <div id="service-form">
+            <!-- Service creation form will be loaded here -->
+          </div>
+        </div>
+        <div class="card">
+          <h2><i class="provider_details_bookings"></i> Manage the Bookings</h2>
+          <div id="provider-bookings">
+            <!-- Provider bookings will be loaded here -->
+          </div>
+        </div>
+        <div class="card">
+          <h2><i class="provider_details_listing"></i> Your Listings</h2>
+          <div id="provider-services">
+            <!-- Provider services will be loaded here -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div class="popup-overlay" id="popupOverlay">
   <div class="popup-message" id="popupMessage">
