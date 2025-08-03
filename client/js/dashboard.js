@@ -230,29 +230,51 @@ async function loadCustomerBookings(customerId) {
     const res = await fetch(`http://localhost:3000/api/bookings/customer/${customerId}`);
     const bookings = await res.json();
 
-    if (bookings.length === 0) {
-      contentDiv.innerHTML = '<h2>Your Bookings</h2><p>You have not booked any services yet.</p>';
-      return;
+    // remove old bookings section
+    const existingBookingsSection = document.querySelector('#bookings-section');
+    if (existingBookingsSection) {
+      existingBookingsSection.remove();
     }
 
-    const bookingsHtml = `
-      <h2>Your Bookings</h2>
-      ${bookings.map(b => `
-        <div style="border:1px solid #ccc; padding:10px; margin:10px;">
-          <p><strong>Service:</strong> ${b.service?.title || 'N/A'}</p>
-          <p><strong>Status:</strong> ${b.status}</p>
-          <p><strong>Notes:</strong> ${b.notes}</p>
-          <button onclick="deleteBooking('${b._id}')">
-            Delete
-          </button>
-        </div>
-      `).join('')}
-    `;
+    // Create new bookings section
+    const bookingsSection = document.createElement('div');
+    bookingsSection.id = 'bookings-section';
 
-    contentDiv.innerHTML += bookingsHtml;
+    if (bookings.length === 0) {
+      bookingsSection.innerHTML = '<h2>Your Bookings</h2><p>You have not booked any services yet.</p>';
+    } else {
+      bookingsSection.innerHTML = `
+        <h2>Your Bookings</h2>
+        ${bookings.map(b => `
+          <div style="border:1px solid #ccc; padding:10px; margin:10px;">
+            <p><strong>Service:</strong> ${b.service?.title || 'N/A'}</p>
+            <p><strong>Status:</strong> ${b.status}</p>
+            <p><strong>Notes:</strong> ${b.notes}</p>
+            <button onclick="deleteBooking('${b._id}')">
+              Delete
+            </button>
+          </div>
+        `).join('')}
+      `;
+    }
+
+    // Append the bookings section to contentDiv
+    contentDiv.appendChild(bookingsSection);
+
   } catch (err) {
     console.error('Failed to load bookings:', err);
-    contentDiv.innerHTML += '<p style="color:red;">Error loading your bookings.</p>';
+    
+    // Remove existing error section if any
+    const existingBookingsSection = document.querySelector('#bookings-section');
+    if (existingBookingsSection) {
+      existingBookingsSection.remove();
+    }
+    
+    // Add error message
+    const errorSection = document.createElement('div');
+    errorSection.id = 'bookings-section';
+    errorSection.innerHTML = '<p style="color:red;">Error loading your bookings.</p>';
+    contentDiv.appendChild(errorSection);
   }
 }
 
@@ -321,15 +343,6 @@ async function deleteService(serviceId) {
   );
 }
 
-async function deleteService(serviceId) {
-  confirmPopUp(
-    'Delete Service', 
-    'Are you sure you want to delete this listing? This action cannot be undone and it might impact your current bookings.',
-    () => {
-      performDeleteService(serviceId);
-    }
-  );
-}
 async function performDeleteService(serviceId) {
   try {
     const res = await fetch(`http://localhost:3000/api/services/${serviceId}`, {
@@ -361,22 +374,18 @@ function popUpMessage(type, message) {
   const cancelBtn = document.getElementById('popupCancel');
   const okBtn = document.getElementById('popupOK');
 
+  // Hide icon and set title based on type
+  icon.textContent = '';
+  icon.style.display = 'none';
+
   // Set icon and title based on type
   if (type === 'success') {
-    icon.textContent = '✓';
-    icon.style.color = '#28a745';
     title.textContent = 'Success';
   } else if (type === 'error') {
-    icon.textContent = '✗';
-    icon.style.color = '#dc3545';
     title.textContent = 'Error';
   } else if (type === 'warning') {
-    icon.textContent = '⚠';
-    icon.style.color = '#ffc107';
     title.textContent = 'Warning';
   } else {
-    icon.textContent = 'ℹ';
-    icon.style.color = '#17a2b8';
     title.textContent = 'Information';
   }
 
@@ -392,23 +401,29 @@ function popUpMessage(type, message) {
   };
 }
 
-function confirmPopUp(message, confirmFunction) {
+function confirmPopUp(titleText,message, confirmFunction) {
   const overlay = document.getElementById('popupOverlay');
   const icon = document.getElementById('popupIcon');
-  const title = document.getElementById('popupTitle');
+  const titleElement = document.getElementById('popupTitle');
   const text = document.getElementById('popupText');
   const cancelBtn = document.getElementById('popupCancel');
   const okBtn = document.getElementById('popupOK');
 
-  icon.textContent = '?';
-  icon.style.color = '#ffc107';
-  title.textContent = 'Confirm';
+  //hide pop up icon
+  icon.textContent = '';
+  icon.style.display = 'none';
+
+  titleElement.textContent = titleText;
   text.textContent = message;
   
   cancelBtn.style.display = 'inline-block';
   okBtn.textContent = 'Yes';
 
   overlay.classList.add('show');
+
+   // Clear any existing event
+  okBtn.onclick = null;
+  cancelBtn.onclick = null;
 
   // Handle Yes/No clicks
   okBtn.onclick = function() {
