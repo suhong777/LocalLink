@@ -7,6 +7,13 @@ const submitQuery = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
+    // Check message length -word limitation 
+    if (message.length > 500) {
+      return res.status(400).json({ 
+        message: "Your query must less than 500 characters." 
+      });
+    }
+
     await Contact.create({ name, email, message });
     res.json({ message: "Your query has been submitted successfully!" });
   } catch (err) {

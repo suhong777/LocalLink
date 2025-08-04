@@ -415,27 +415,6 @@ footer {
   transform: scale(1);
 }
 
-.popup-icon {
-  font-size: 3rem;
-  margin-bottom: 15px;
-}
-
-.popup-message.success .popup-icon {
-  color: #28a745;
-}
-
-.popup-message.error .popup-icon {
-  color: #dc3545;
-}
-
-.popup-message.warning .popup-icon {
-  color: #ffc107;
-}
-
-.popup-message.info .popup-icon {
-  color: #17a2b8;
-}
-
 .popup-title {
   color: #2c3e50;
   margin-bottom: 15px;

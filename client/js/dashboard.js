@@ -308,7 +308,7 @@ async function loadCustomerBookings(customerId) {
         
         bookingsHTML += `
           <div class="item">
-            <h3>${booking.service?.title || 'N/A'}</h3>
+            <h3>${booking.service?.title || 'Service No Longer Available'}</h3>
             <p><strong>Status:</strong> <span class="status ${statusClass}">${booking.status}</span></p>
             <p><strong>Notes:</strong> ${booking.notes || 'No notes'}</p>
             <div class="actions"> 
