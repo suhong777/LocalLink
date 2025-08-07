@@ -11,7 +11,7 @@ async function loadListings() {
   
     document.getElementById('listings').innerHTML = services.map(s => `
       <div style="border:1px solid #ccc; padding:10px; margin:10px;">
-        <p><strong>${s.title}</strong> - $${s.price}</p>
+        <p><strong>${s.title}</strong> - €${parseFloat(s.price).toFixed(2)}</p
         <p>${s.description}</p>
         <p><a href="login.html">Log in</a> to book this service</p>
       </div>
